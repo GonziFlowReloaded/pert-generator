@@ -1,0 +1,158 @@
+{
+  "Fase 1": [
+    {
+      "actividad": 1,
+      "precedente": "-",
+      "tiempo_optimista": 2,
+      "tiempo_probable": 3,
+      "tiempo_pesimista": 4,
+      "descripcion": "Investigar problemas en el análisis de encuestas abiertas."
+    },
+    {
+      "actividad": 2,
+      "precedente": 1,
+      "tiempo_optimista": 1,
+      "tiempo_probable": 2,
+      "tiempo_pesimista": 3,
+      "descripcion": "Analizar cómo se resuelve actualmente este problema."
+    },
+    {
+      "actividad": 3,
+      "precedente": 2,
+      "tiempo_optimista": 1,
+      "tiempo_probable": 2,
+      "tiempo_pesimista": 3,
+      "descripcion": "Confirmar que la falta de automatización en encuestas abiertas es una problemática real."
+    },
+    {
+      "actividad": 4,
+      "precedente": 3,
+      "tiempo_optimista": 2,
+      "tiempo_probable": 3,
+      "tiempo_pesimista": 4,
+      "descripcion": "Definir una solución basada en inteligencia artificial y NLP."
+    },
+    {
+      "actividad": 5,
+      "precedente": 4,
+      "tiempo_optimista": 1,
+      "tiempo_probable": 2,
+      "tiempo_pesimista": 3,
+      "descripcion": "Esquematizar cómo funcionará el sistema multiagente."
+    },
+    {
+      "actividad": 6,
+      "precedente": 5,
+      "tiempo_optimista": 2,
+      "tiempo_probable": 3,
+      "tiempo_pesimista": 4,
+      "descripcion": "Evaluar la viabilidad técnica y económica de la solución."
+    },
+    {
+      "actividad": 7,
+      "precedente": 6,
+      "tiempo_optimista": 1,
+      "tiempo_probable": 2,
+      "tiempo_pesimista": 3,
+      "descripcion": "Identificar sectores y empresas que podrían necesitar el producto."
+    },
+    {
+      "actividad": 8,
+      "precedente": 7,
+      "tiempo_optimista": 2,
+      "tiempo_probable": 3,
+      "tiempo_pesimista": 4,
+      "descripcion": "Contacto con potenciales usuarios para validar el problema."
+    },
+    {
+      "actividad": 9,
+      "precedente": 8,
+      "tiempo_optimista": 2,
+      "tiempo_probable": 3,
+      "tiempo_pesimista": 4,
+      "descripcion": "Analizar tecnologías adecuadas para NLP y sistemas multiagente."
+    },
+    {
+      "actividad": 10,
+      "precedente": 9,
+      "tiempo_optimista": 1,
+      "tiempo_probable": 2,
+      "tiempo_pesimista": 3,
+      "descripcion": "Evaluar cómo desarrollar una demo funcional del producto."
+    },
+    {
+      "actividad": 11,
+      "precedente": 9,
+      "tiempo_optimista": 1,
+      "tiempo_probable": 2,
+      "tiempo_pesimista": 3,
+      "descripcion": "Identificación de interesados y sus necesidades."
+    },
+    {
+      "actividad": 12,
+      "precedente": 11,
+      "tiempo_optimista": 2,
+      "tiempo_probable": 3,
+      "tiempo_pesimista": 4,
+      "descripcion": "Realizar el análisis de riesgos iniciales."
+    }
+  ],
+  "Fase 2": [
+    {
+      "actividad": 13,
+      "precedente": 10,
+      "tiempo_optimista": 3,
+      "tiempo_probable": 5,
+      "tiempo_pesimista": 6,
+      "descripcion": "Diseñar la estructura e interacciones del sistema multiagente."
+    },
+    {
+      "actividad": 14,
+      "precedente": 13,
+      "tiempo_optimista": 2,
+      "tiempo_probable": 4,
+      "tiempo_pesimista": 6,
+      "descripcion": "Definir funcionalidades, salidas esperadas y datos a manejar."
+    },
+    {
+      "actividad": 15,
+      "precedente": 14,
+      "tiempo_optimista": 2,
+      "tiempo_probable": 3,
+      "tiempo_pesimista": 4,
+      "descripcion": "Investigar opciones de financiamiento en entidades argentinas."
+    },
+    {
+      "actividad": 16,
+      "precedente": 15,
+      "tiempo_optimista": 1,
+      "tiempo_probable": 2,
+      "tiempo_pesimista": 3,
+      "descripcion": "Evaluar préstamos disponibles y seleccionar la opción óptima."
+    },
+    {
+      "actividad": 17,
+      "precedente": 16,
+      "tiempo_optimista": 2,
+      "tiempo_probable": 3,
+      "tiempo_pesimista": 4,
+      "descripcion": "Elaborar el cronograma del proyecto (PERT/Gantt)."
+    },
+    {
+      "actividad": 18,
+      "precedente": 17,
+      "tiempo_optimista": 1,
+      "tiempo_probable": 2,
+      "tiempo_pesimista": 3,
+      "descripcion": "Asignar recursos, roles y responsabilidades del equipo."
+    },
+    {
+      "actividad": 19,
+      "precedente": 12,
+      "tiempo_optimista": 1,
+      "tiempo_probable": 2,
+      "tiempo_pesimista": 3,
+      "descripcion": "Identificar riesgos críticos y definir estrategias de mitigación."
+    }
+  ]
+}

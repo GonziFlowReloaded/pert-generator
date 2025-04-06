@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Diagrama PERT</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Generador de Diagrama PERT</h1>
+        
+        <div class="input-section">
+            <h2>Ingresa tu JSON con los datos del proyecto</h2>
+            <textarea id="json-input" placeholder='Ejemplo:
+{
+  "Fase 1": [
+    {
+      "actividad": 1,
+      "precedente": "-",
+      "tiempo_optimista": 3,
+      "tiempo_probable": 5,
+      "tiempo_pesimista": 7,
+      "descripcion": "Iniciar proyecto"
+    },
+    {
+      "actividad": 2,
+      "precedente": 1,
+      "tiempo_optimista": 2,
+      "tiempo_probable": 4,
+      "tiempo_pesimista": 6,
+      "descripcion": "Planificación"
+    }
+  ]
+}'></textarea>
+            <div id="error-message"></div>
+            <div style="margin-top: 10px;">
+                <button id="generate-btn">Generar Diagrama PERT</button>
+                <button id="sample-data">Cargar Ejemplo</button>
+            </div>
+        </div>
+        
+        <div id="results" style="display: none;">
+            <h2>Tabla de Actividades</h2>
+            <div id="activity-table"></div>
+            
+            <h2>Diagrama PERT</h2>
+            <div class="legend">
+                <h3>Leyenda:</h3>
+                <div class="legend-item">
+                    <div class="legend-color critical-legend"></div>
+                    <div>Ruta Crítica</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color normal-legend"></div>
+                    <div>Actividad Normal</div>
+                </div>
+            </div>
+            <div class="diagram-container">
+                <div id="pert-diagram"></div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button id="export-png">Exportar Diagrama como PNG</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="pert.js"></script>
+    <script src="export.js"></script>
+    <script>
+        // Función para cargar datos de ejemplo
+        document.getElementById('sample-data').addEventListener('click', function() {
+            const sampleData = {
+                "Fase 1": [
+                    {
+                        "actividad": 1,
+                        "precedente": "-",
+                        "tiempo_optimista": 1,
+                        "tiempo_probable": 2,
+                        "tiempo_pesimista": 3,
+                        "descripcion": "Iniciar proyecto"
+                    },
+                    {
+                        "actividad": 2,
+                        "precedente": 1,
+                        "tiempo_optimista": 2,
+                        "tiempo_probable": 3,
+                        "tiempo_pesimista": 4,
+                        "descripcion": "Análisis de requisitos"
+                    }
+                ],
+                "Fase 2": [
+                    {
+                        "actividad": 3,
+                        "precedente": 2,
+                        "tiempo_optimista": 2,
+                        "tiempo_probable": 4,
+                        "tiempo_pesimista": 6,
+                        "descripcion": "Diseño"
+                    },
+                    {
+                        "actividad": 4,
+                        "precedente": 2,
+                        "tiempo_optimista": 3,
+                        "tiempo_probable": 5,
+                        "tiempo_pesimista": 7,
+                        "descripcion": "Planificación de recursos"
+                    }
+                ],
+                "Fase 3": [
+                    {
+                        "actividad": 5,
+                        "precedente": 3,
+                        "tiempo_optimista": 5,
+                        "tiempo_probable": 7,
+                        "tiempo_pesimista": 9,
+                        "descripcion": "Desarrollo"
+                    },
+                    {
+                        "actividad": 6,
+                        "precedente": 4,
+                        "tiempo_optimista": 2,
+                        "tiempo_probable": 4,
+                        "tiempo_pesimista": 6,
+                        "descripcion": "Adquisición de materiales"
+                    }
+                ],
+                "Fase 4": [
+                    {
+                        "actividad": 7,
+                        "precedente": "5,6",
+                        "tiempo_optimista": 3,
+                        "tiempo_probable": 4,
+                        "tiempo_pesimista": 5,
+                        "descripcion": "Pruebas"
+                    },
+                    {
+                        "actividad": 8,
+                        "precedente": 7,
+                        "tiempo_optimista": 1,
+                        "tiempo_probable": 2,
+                        "tiempo_pesimista": 3,
+                        "descripcion": "Implementación"
+                    }
+                ]
+            };
+            
+            document.getElementById('json-input').value = JSON.stringify(sampleData, null, 2);
+        });
+
+        // Función para generar el diagrama PERT
+        document.getElementById('generate-btn').addEventListener('click', function() {
+            const jsonInput = document.getElementById('json-input').value;
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = '';
+            
+            try {
+                // Parsear el JSON
+                const data = JSON.parse(jsonInput);
+                
+                // Procesar los datos
+                const activities = processData(data);
+                
+                // Generar tablas y diagramas
+                generateActivityTable(activities);
+                generatePERTDiagram(activities);
+                
+                // Mostrar resultados
+                document.getElementById('results').style.display = 'block';
+            } catch (error) {
+                errorElement.textContent = 'Error al procesar el JSON: ' + error.message;
+            }
+        });
+
+        // Configurar el botón de exportación
+        setupExportButton();
+    </script>
+</body>
+</html>

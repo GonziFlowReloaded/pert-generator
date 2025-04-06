@@ -1,0 +1,315 @@
+jaquelin\pert.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama PERT</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre-d3/0.6.4/dagre-d3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .graph {
+            width: 100%;
+            height: 800px;
+            border: 1px solid #ccc;
+            overflow: auto;
+        }
+        .node rect {
+            stroke: #333;
+            fill: #fff;
+        }
+        .node.critical rect {
+            fill: #ffdddd;
+        }
+        .edgePath path {
+            stroke: #333;
+            fill: none;
+            stroke-width: 1.5px;
+        }
+        .edgePath.critical path {
+            stroke: #ff0000;
+            stroke-width: 2.5px;
+        }
+        .node-info {
+            font-size: 12px;
+            text-align: center;
+        }
+        .legend {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            display: inline-block;
+        }
+        .legend-item {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        .legend-critical {
+            background-color: #ffdddd;
+            border: 1px solid #333;
+        }
+        .legend-normal {
+            background-color: #fff;
+            border: 1px solid #333;
+        }
+        .legend-path-critical {
+            border-top: 2.5px solid #ff0000;
+            width: 30px;
+            margin-right: 10px;
+        }
+        .legend-path-normal {
+            border-top: 1.5px solid #333;
+            width: 30px;
+            margin-right: 10px;
+        }
+        .summary {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Diagrama PERT del Proyecto</h1>
+        <div class="graph" id="graph"></div>
+        
+        <div class="legend">
+            <h3>Leyenda</h3>
+            <div class="legend-item">
+                <div class="legend-color legend-critical"></div>
+                <span>Actividad en ruta crítica</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-normal"></div>
+                <span>Actividad normal</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-path-critical"></div>
+                <span>Ruta crítica</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-path-normal"></div>
+                <span>Dependencia normal</span>
+            </div>
+        </div>
+        
+        <div class="summary" id="summary">
+            <h3>Resumen del proyecto</h3>
+            <div id="summary-content">Calculando...</div>
+        </div>
+    </div>
+
+    <script>
+        // Cargar los datos desde el archivo JSON
+        fetch('data')
+            .then(response => response.json())
+            .then(data => {
+                // Procesar y mostrar el diagrama PERT
+                procesarDatos(data);
+            })
+            .catch(error => {
+                console.error('Error al cargar los datos:', error);
+                document.getElementById('graph').innerHTML = 
+                    '<p style="color: red; padding: 20px;">Error al cargar los datos. Por favor verifica que el archivo data.json existe y es accesible.</p>';
+            });
+
+        function procesarDatos(data) {
+            // Combinar todas las fases en un solo array de actividades
+            let actividades = [];
+            Object.keys(data).forEach(fase => {
+                actividades = actividades.concat(data[fase]);
+            });
+
+            // Cálculo de tiempos esperados y varianzas para cada actividad
+            actividades.forEach(act => {
+                act.tiempo_esperado = (act.tiempo_optimista + 4 * act.tiempo_probable + act.tiempo_pesimista) / 6;
+                act.varianza = Math.pow((act.tiempo_pesimista - act.tiempo_optimista) / 6, 2);
+                act.ES = 0; // Tiempo de inicio temprano
+                act.EF = 0; // Tiempo de finalización temprano
+                act.LS = 0; // Tiempo de inicio tardío
+                act.LF = 0; // Tiempo de finalización tardío
+                act.holgura = 0; // Holgura
+            });
+
+            // Ordenar actividades por número
+            actividades.sort((a, b) => a.actividad - b.actividad);
+
+            // Forward pass - calcular ES y EF
+            actividades.forEach(act => {
+                if (act.precedente === '-') {
+                    act.ES = 0;
+                } else {
+                    // Encontrar todas las actividades precedentes (podría haber múltiples)
+                    let precedentes = String(act.precedente).split(',').map(p => p.trim());
+                    let maxEF = 0;
+                    
+                    precedentes.forEach(pred => {
+                        let preAct = actividades.find(a => a.actividad == pred);
+                        if (preAct && preAct.EF > maxEF) {
+                            maxEF = preAct.EF;
+                        }
+                    });
+                    
+                    act.ES = maxEF;
+                }
+                
+                act.EF = act.ES + act.tiempo_esperado;
+            });
+
+            // Encontrar la duración total del proyecto
+            let duracionProyecto = Math.max(...actividades.map(act => act.EF));
+
+            // Backward pass - calcular LS y LF
+            for (let i = actividades.length - 1; i >= 0; i--) {
+                let act = actividades[i];
+                
+                // Encontrar actividades que dependen de esta
+                let siguientes = actividades.filter(a => {
+                    if (a.precedente === '-') return false;
+                    return String(a.precedente).split(',').map(p => p.trim()).includes(String(act.actividad));
+                });
+                
+                if (siguientes.length === 0) {
+                    // Actividad final
+                    act.LF = duracionProyecto;
+                } else {
+                    // El tiempo más temprano de inicio de las actividades siguientes
+                    act.LF = Math.min(...siguientes.map(a => a.LS));
+                }
+                
+                act.LS = act.LF - act.tiempo_esperado;
+                act.holgura = act.LF - act.EF;
+            }
+
+            // Identificar la ruta crítica (actividades con holgura cero)
+            actividades.forEach(act => {
+                act.esCritico = act.holgura === 0;
+            });
+
+            // Crear el gráfico con Dagre-D3
+            const g = new dagreD3.graphlib.Graph()
+                .setGraph({rankdir: 'LR', marginx: 20, marginy: 20})
+                .setDefaultEdgeLabel(() => ({}));
+
+            // Añadir nodos (actividades)
+            actividades.forEach(act => {
+                const labelHtml = `
+                    <div class="node-info">
+                        <div><strong>Actividad ${act.actividad}</strong></div>
+                        <div>${act.descripcion.substring(0, 25)}${act.descripcion.length > 25 ? '...' : ''}</div>
+                        <hr style="margin: 4px 0;">
+                        <div>Tiempo: ${act.tiempo_esperado.toFixed(1)}</div>
+                        <div>ES: ${act.ES.toFixed(1)} | EF: ${act.EF.toFixed(1)}</div>
+                        <div>LS: ${act.LS.toFixed(1)} | LF: ${act.LF.toFixed(1)}</div>
+                        <div>Holgura: ${act.holgura.toFixed(1)}</div>
+                    </div>
+                `;
+                
+                g.setNode(act.actividad.toString(), {
+                    labelType: 'html',
+                    label: labelHtml,
+                    rx: 5,
+                    ry: 5,
+                    padding: 10,
+                    class: act.esCritico ? 'critical' : ''
+                });
+            });
+
+            // Añadir eventos (dependencias)
+            actividades.forEach(act => {
+                if (act.precedente !== '-') {
+                    String(act.precedente).split(',').forEach(pred => {
+                        const predId = pred.trim();
+                        const actId = act.actividad.toString();
+                        
+                        // Verificar si ambos nodos existen antes de crear la arista
+                        if (g.hasNode(predId) && g.hasNode(actId)) {
+                            const edge = g.setEdge(predId, actId, {
+                                class: (actividades.find(a => a.actividad == predId)?.esCritico && 
+                                       act.esCritico) ? 'critical' : '',
+                                arrowheadClass: 'arrowhead',
+                                lineInterpolate: 'basis'
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Renderizar el gráfico
+            const svg = d3.select("#graph")
+                .append("svg")
+                .attr("width", "100%")
+                .attr("height", "100%");
+                
+            const inner = svg.append("g");
+
+            // Crear un zoom para el SVG
+            const zoom = d3.zoom().on("zoom", (event) => {
+                inner.attr("transform", event.transform);
+            });
+            
+            svg.call(zoom);
+
+            // Renderizar con D3
+            const render = new dagreD3.render();
+            render(inner, g);
+
+            // Centrar el gráfico
+            const initialScale = 0.75;
+            const svgWidth = document.getElementById("graph").clientWidth;
+            const svgHeight = document.getElementById("graph").clientHeight;
+            const graphWidth = g.graph().width;
+            const graphHeight = g.graph().height;
+            
+            const xCenterOffset = (svgWidth - graphWidth * initialScale) / 2;
+            const yCenterOffset = (svgHeight - graphHeight * initialScale) / 2;
+            
+            svg.call(zoom.transform, d3.zoomIdentity
+                .translate(xCenterOffset, yCenterOffset)
+                .scale(initialScale));
+
+            // Mostrar resumen del proyecto
+            const rutaCritica = actividades
+                .filter(act => act.esCritico)
+                .map(act => act.actividad)
+                .sort((a, b) => {
+                    const actA = actividades.find(act => act.actividad === a);
+                    const actB = actividades.find(act => act.actividad === b);
+                    return actA.ES - actB.ES;
+                });
+
+            const varianzaTotal = actividades
+                .filter(act => act.esCritico)
+                .reduce((sum, act) => sum + act.varianza, 0);
+
+            const desviacionEstandar = Math.sqrt(varianzaTotal);
+
+            document.getElementById('summary-content').innerHTML = `
+                <p><strong>Duración esperada del proyecto:</strong> ${duracionProyecto.toFixed(1)} semanas</p>
+                <p><strong>Desviación estándar:</strong> ${desviacionEstandar.toFixed(2)} semanas</p>
+                <p><strong>Ruta crítica:</strong> ${rutaCritica.join(' → ')}</p>
+            `;
+        }
+    </script>
+</body>
+</html>
