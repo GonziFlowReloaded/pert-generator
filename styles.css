@@ -74,8 +74,8 @@ th {
 }
 
 .node {
-    width: 180px;
-    height: 120px;
+    width: 200px;
+    height: 160px;
     border: 2px solid #333;
     border-radius: 12px;
     display: inline-flex;
@@ -153,6 +153,20 @@ th {
     font-size: 10px;
     color: #7f8c8d;
     margin-right: 3px;
+    font-weight: bold;
+}
+
+/* Estilos específicos para los tiempos t1, t2 y th */
+.time-box:nth-child(-n+3) {
+    background-color: #e3f2fd;
+}
+
+.time-box:nth-child(-n+3):hover {
+    background-color: #bbdefb;
+}
+
+.time-box:nth-child(-n+3) .time-label {
+    color: #1976d2;
 }
 
 .arrow {
@@ -188,6 +202,18 @@ th {
 
 .critical-arrow::before {
     border-left-color: #e74c3c;
+}
+
+.dummy-arrow {
+    background-color: transparent;
+    border-top: 2px dashed #3498db;
+    height: 0;
+}
+
+.dummy-arrow::before {
+    border-left: 10px solid #3498db;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
 }
 
 .activity-time {

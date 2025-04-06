@@ -25,7 +25,8 @@ function processData(data) {
                 lateStart: 0,
                 lateFinish: 0,
                 slack: 0,
-                isCritical: false
+                isCritical: false,
+                isDummy: activity.precedente === "dummy" // Para identificar actividades ficticias
             });
         });
     });
@@ -174,12 +175,12 @@ function generatePERTDiagram(activities) {
         const timeData = document.createElement('div');
         timeData.className = 'time-data';
         
-        // Early Start y Early Finish
+        // Inicio Temprano y Finalización Temprana
         const earlyBox = document.createElement('div');
         earlyBox.className = 'time-box';
         const earlyLabel = document.createElement('span');
         earlyLabel.className = 'time-label';
-        earlyLabel.textContent = 'ES:';
+        earlyLabel.textContent = 'IT:';
         earlyBox.appendChild(earlyLabel);
         earlyBox.appendChild(document.createTextNode(activity.earlyStart.toFixed(1)));
         
@@ -187,16 +188,16 @@ function generatePERTDiagram(activities) {
         earlyFinishBox.className = 'time-box';
         const earlyFinishLabel = document.createElement('span');
         earlyFinishLabel.className = 'time-label';
-        earlyFinishLabel.textContent = 'EF:';
+        earlyFinishLabel.textContent = 'FT:';
         earlyFinishBox.appendChild(earlyFinishLabel);
         earlyFinishBox.appendChild(document.createTextNode(activity.earlyFinish.toFixed(1)));
         
-        // Late Start y Late Finish
+        // Inicio Tardío y Finalización Tardía
         const lateBox = document.createElement('div');
         lateBox.className = 'time-box';
         const lateLabel = document.createElement('span');
         lateLabel.className = 'time-label';
-        lateLabel.textContent = 'LS:';
+        lateLabel.textContent = 'ITa:';
         lateBox.appendChild(lateLabel);
         lateBox.appendChild(document.createTextNode(activity.lateStart.toFixed(1)));
         
@@ -204,15 +205,25 @@ function generatePERTDiagram(activities) {
         lateFinishBox.className = 'time-box';
         const lateFinishLabel = document.createElement('span');
         lateFinishLabel.className = 'time-label';
-        lateFinishLabel.textContent = 'LF:';
+        lateFinishLabel.textContent = 'FTa:';
         lateFinishBox.appendChild(lateFinishLabel);
         lateFinishBox.appendChild(document.createTextNode(activity.lateFinish.toFixed(1)));
+        
+        // Holgura
+        const slackBox = document.createElement('div');
+        slackBox.className = 'time-box';
+        const slackLabel = document.createElement('span');
+        slackLabel.className = 'time-label';
+        slackLabel.textContent = 'H:';
+        slackBox.appendChild(slackLabel);
+        slackBox.appendChild(document.createTextNode(activity.slack.toFixed(1)));
         
         // Agregar todos los elementos al nodo
         timeData.appendChild(earlyBox);
         timeData.appendChild(earlyFinishBox);
         timeData.appendChild(lateBox);
         timeData.appendChild(lateFinishBox);
+        timeData.appendChild(slackBox);
         
         nodeContent.appendChild(nodeId);
         nodeContent.appendChild(description);
@@ -294,6 +305,12 @@ function generatePERTDiagram(activities) {
                     const arrow = document.createElement('div');
                     arrow.className = 'arrow';
                     
+                    // Verificar si es una actividad ficticia
+                    const pred = activities.find(a => a.id === predId);
+                    if (pred && pred.isDummy) {
+                        arrow.classList.add('dummy-arrow');
+                    }
+                    
                     // Calcular la longitud y el ángulo
                     const dx = toX - fromX;
                     const dy = toY - fromY;
@@ -311,7 +328,6 @@ function generatePERTDiagram(activities) {
                     arrow.style.backgroundColor = '#3498db';
                     
                     // Verificar si la flecha es parte del camino crítico
-                    const pred = activities.find(a => a.id === predId);
                     if (pred && pred.isCritical && activity.isCritical) {
                         arrow.classList.add('critical-arrow');
                         arrow.style.backgroundColor = '#e74c3c';
